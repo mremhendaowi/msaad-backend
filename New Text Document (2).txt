@@ -1,0 +1,15 @@
+cd E:\msaad\msaad-backend
+
+
+
+node server.js
+
+AIzaSyB3wbNLrU2OpbhnP-ffENJfLU6hjt0fn3I
+
+
+git init
+git add .
+git commit -m "first upload"
+git branch -M main
+git remote add origin https://github.com/mremhendaowi/msaad-backend.git
+git push -u origin main
