@@ -12,7 +12,7 @@ app.post("/chat", async (req, res) => {
 
   try {
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + API_KEY,
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY,
       {
         method: "POST",
         headers: {
@@ -30,13 +30,16 @@ app.post("/chat", async (req, res) => {
 
     const data = await response.json();
 
+    console.log(data); // مهم للتشخيص
+
     const reply =
       data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "لم يتم الحصول على رد";
+      "لا يوجد رد";
 
     res.json({ reply });
   } catch (error) {
-    res.json({ reply: "خطأ في الاتصال بالذكاء الاصطناعي" });
+    console.log(error);
+    res.json({ reply: "خطأ في الاتصال" });
   }
 });
 
