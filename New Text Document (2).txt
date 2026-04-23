@@ -13,3 +13,5 @@ git commit -m "first upload"
 git branch -M main
 git remote add origin https://github.com/mremhendaowi/msaad-backend.git
 git push -u origin main
+
+git config --global user.email "your-rami327242@gmail.com"
