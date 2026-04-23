@@ -1,5 +1,5 @@
-const express = require("express");
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
 
 const app = express();
 app.use(cors());
@@ -29,8 +29,7 @@ app.post("/chat", async (req, res) => {
     );
 
     const data = await response.json();
-
-    console.log(data); // مهم للتشخيص
+    console.log(data);
 
     const reply =
       data.candidates?.[0]?.content?.parts?.[0]?.text ||
