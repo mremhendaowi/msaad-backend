@@ -5,10 +5,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// قراءة المفتاح من Render
 const API_KEY = process.env.OPENROUTER_API_KEY;
 
 app.post("/chat", async (req, res) => {
   const userMessage = req.body.message;
+
+  // ✅ فحص وجود المفتاح
+  if (!API_KEY) {
+    console.log("API KEY MISSING");
+    return res.json({
+      reply: "المفتاح غير موجود في السيرفر"
+    });
+  }
 
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -18,7 +27,7 @@ app.post("/chat", async (req, res) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "mistralai/mistral-7b-instruct", // نموذج مجاني ومتاح
+        model: "mistralai/mistral-7b-instruct",
         messages: [
           { role: "user", content: userMessage }
         ]
@@ -27,16 +36,17 @@ app.post("/chat", async (req, res) => {
 
     const data = await response.json();
 
-    // اطبع الرد كامل في Logs
-    console.log("OpenRouter:", data);
+    // طباعة الرد الكامل في Logs
+    console.log("OpenRouter response:", data);
 
-    // إذا في خطأ من OpenRouter
+    // ✅ إذا في خطأ من API
     if (data.error) {
       return res.json({
         reply: "خطأ: " + data.error.message
       });
     }
 
+    // ✅ استخراج الرد
     const reply =
       data.choices?.[0]?.message?.content ||
       "لا يوجد رد";
@@ -45,10 +55,13 @@ app.post("/chat", async (req, res) => {
 
   } catch (error) {
     console.log("Server error:", error);
-    res.json({ reply: "خطأ في الاتصال" });
+    res.json({
+      reply: "خطأ في الاتصال بالسيرفر"
+    });
   }
 });
 
+// مهم لـ Render
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
