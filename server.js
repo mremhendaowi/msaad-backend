@@ -18,7 +18,7 @@ app.post("/chat", async (req, res) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "openai/gpt-3.5-turbo",
+        model: "mistralai/mistral-7b-instruct", // نموذج مجاني ومتاح
         messages: [
           { role: "user", content: userMessage }
         ]
@@ -26,7 +26,16 @@ app.post("/chat", async (req, res) => {
     });
 
     const data = await response.json();
-    console.log(data);
+
+    // اطبع الرد كامل في Logs
+    console.log("OpenRouter:", data);
+
+    // إذا في خطأ من OpenRouter
+    if (data.error) {
+      return res.json({
+        reply: "خطأ: " + data.error.message
+      });
+    }
 
     const reply =
       data.choices?.[0]?.message?.content ||
@@ -35,7 +44,7 @@ app.post("/chat", async (req, res) => {
     res.json({ reply });
 
   } catch (error) {
-    console.log(error);
+    console.log("Server error:", error);
     res.json({ reply: "خطأ في الاتصال" });
   }
 });
