@@ -1,40 +1,61 @@
-import express from 'express';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import dotenv from 'dotenv';
-import cors from 'cors';
-
-dotenv.config();
+import express from "express";
+import cors from "cors";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const API_KEY = process.env.API_KEY;
 
-app.get('/', (req, res) => res.send('Server is Up!'));
+app.post("/chat", async (req, res) => {
+  const userMessage = req.body.message;
 
-app.post('/chat', async (req, res) => {
-    try {
-        const { message } = req.body;
-        if (!process.env.GEMINI_API_KEY) {
-            throw new Error("API Key is missing in Render Environment");
-        }
+  try {
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: userMessage }],
+            },
+          ],
+        }),
+      }
+    );
 
-        // استخدام gemini-1.5-flash كخيار أول لأنه الأحدث
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const result = await model.generateContent(message);
-        const response = await result.response;
-        res.json({ reply: response.text() });
-    } catch (error) {
-        console.error("DEBUG ERROR:", error.message);
-        // إرسال تفاصيل الخطأ بدقة
-        res.status(500).json({ 
-            error: "حدث خطأ داخلي", 
-            details: error.message 
-        });
+    const data = await response.json();
+
+    // طباعة الرد في Logs للتشخيص
+    console.log("Gemini response:", data);
+
+    // إذا في خطأ من Gemini
+    if (data.error) {
+      return res.json({
+        reply: "خطأ: " + data.error.message,
+      });
     }
+
+    // استخراج الرد
+    const reply =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "لا يوجد رد";
+
+    res.json({ reply });
+
+  } catch (error) {
+    console.log("Server error:", error);
+    res.json({
+      reply: "خطأ في الاتصال بالسيرفر",
+    });
+  }
 });
 
+// مهم لـ Render
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
